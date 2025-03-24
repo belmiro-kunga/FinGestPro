@@ -25,8 +25,7 @@ class Migration(migrations.Migration):
                 'verbose_name': 'Resumo da Folha de Pagamento',
                 'verbose_name_plural': 'Resumos da Folha de Pagamento',
                 'ordering': ['empresa', 'funcionario', 'data_pagamento'],
+                'db_table': 'resumo_folha_pagamento',
             },
-            managed=False,
-            db_table='resumo_folha_pagamento',
         ),
     ] 

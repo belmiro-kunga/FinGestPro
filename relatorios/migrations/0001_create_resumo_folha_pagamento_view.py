@@ -9,7 +9,7 @@ class Migration(migrations.Migration):
     operations = [
         migrations.RunSQL(
             sql="""
-            CREATE OR REPLACE VIEW resumo_folha_pagamento AS
+            CREATE VIEW IF NOT EXISTS resumo_folha_pagamento AS
             SELECT 
                 e.nome AS empresa,
                 f.nome AS funcionario,
