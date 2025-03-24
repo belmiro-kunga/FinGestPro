@@ -42,6 +42,9 @@ INSTALLED_APPS = [
     'subscriptions',
     'rh',
     'faturacao',
+    'estoque',
+    'reservas.apps.ReservasConfig',
+    'clientes',
 ]
 
 MIDDLEWARE = [
