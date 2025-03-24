@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'estoque',
     'reservas.apps.ReservasConfig',
     'clientes',
+    'relatorios',
 ]
 
 MIDDLEWARE = [
