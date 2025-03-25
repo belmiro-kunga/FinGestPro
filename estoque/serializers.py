@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import EstoqueProdutos, MovimentacoesEstoque
+from .models import EstoqueProdutos, MovimentacoesEstoque, Produtos
 from subscriptions.serializers import EmpresasSerializer
 
 class EstoqueProdutosSerializer(serializers.ModelSerializer):
@@ -78,3 +78,8 @@ class MovimentacoesEstoqueSerializer(serializers.ModelSerializer):
             )
 
         return data
+
+class ProdutosSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Produtos
+        fields = ['id', 'nome', 'stock']

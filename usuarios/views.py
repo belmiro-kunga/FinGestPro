@@ -1,0 +1,165 @@
+from django.shortcuts import render
+from rest_framework import viewsets, status, permissions
+from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth import get_user_model, authenticate
+from django.utils import timezone
+from django.conf import settings
+from .serializers import (
+    UsuarioSerializer,
+    UsuarioUpdateSerializer,
+    ChangePasswordSerializer
+)
+import jwt
+from datetime import datetime, timedelta
+
+User = get_user_model()
+
+class UsuarioViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UsuarioSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_serializer_class(self):
+        if self.action in ['update', 'partial_update']:
+            return UsuarioUpdateSerializer
+        return UsuarioSerializer
+
+    def get_queryset(self):
+        # Usuários só podem ver outros usuários da mesma empresa
+        return User.objects.filter(empresa=self.request.user.empresa)
+
+    def perform_create(self, serializer):
+        # Registra o IP do usuário
+        serializer.save(
+            last_login_ip=self.request.META.get('REMOTE_ADDR')
+        )
+
+    @action(detail=False, methods=['post'])
+    def login(self, request):
+        """
+        Endpoint para login de usuários.
+        Retorna um token JWT se as credenciais estiverem corretas.
+        """
+        username = request.data.get('username')
+        password = request.data.get('password')
+
+        if not username or not password:
+            return Response(
+                {'error': 'Por favor, forneça username e password'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        user = authenticate(username=username, password=password)
+
+        if not user:
+            return Response(
+                {'error': 'Credenciais inválidas'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        if not user.is_active:
+            return Response(
+                {'error': 'Usuário está desativado'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        # Atualiza o último IP de login
+        user.last_login_ip = request.META.get('REMOTE_ADDR')
+        user.save()
+
+        # Gera tokens JWT
+        refresh = RefreshToken.for_user(user)
+        access_token = refresh.access_token
+
+        # Adiciona claims personalizados ao token
+        access_token['username'] = user.username
+        access_token['email'] = user.email
+        if user.empresa:
+            access_token['empresa_id'] = user.empresa.id
+            access_token['empresa_nome'] = user.empresa.nome
+
+        return Response({
+            'refresh': str(refresh),
+            'access': str(access_token),
+            'user': {
+                'id': user.id,
+                'username': user.username,
+                'email': user.email,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'empresa': user.empresa.nome if user.empresa else None,
+                'cargo': user.cargo,
+                'is_staff': user.is_staff,
+                'is_superuser': user.is_superuser
+            }
+        })
+
+    @action(detail=False, methods=['post'])
+    def refresh_token(self, request):
+        """Atualiza o token de acesso usando o refresh token"""
+        refresh_token = request.data.get('refresh')
+        if not refresh_token:
+            return Response(
+                {'error': 'Refresh token é obrigatório'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            refresh = RefreshToken(refresh_token)
+            access_token = refresh.access_token
+
+            # Adiciona claims personalizados ao novo token
+            user = User.objects.get(id=refresh['user_id'])
+            access_token['username'] = user.username
+            access_token['email'] = user.email
+            if user.empresa:
+                access_token['empresa_id'] = user.empresa.id
+                access_token['empresa_nome'] = user.empresa.nome
+
+            return Response({
+                'access': str(access_token)
+            })
+        except Exception as e:
+            return Response(
+                {'error': 'Token inválido ou expirado'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+    @action(detail=False, methods=['post'])
+    def logout(self, request):
+        """Invalida o refresh token atual"""
+        try:
+            refresh_token = request.data.get('refresh')
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+            return Response({'message': 'Logout realizado com sucesso'})
+        except Exception:
+            return Response(
+                {'error': 'Token inválido'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+    @action(detail=False, methods=['get'])
+    def me(self, request):
+        """Retorna os dados do usuário atual"""
+        serializer = self.get_serializer(request.user)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['post'])
+    def change_password(self, request):
+        """Altera a senha do usuário atual"""
+        serializer = ChangePasswordSerializer(data=request.data)
+        if serializer.is_valid():
+            user = request.user
+            if not user.check_password(serializer.data.get('old_password')):
+                return Response(
+                    {'old_password': 'Senha incorreta'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            user.set_password(serializer.data.get('new_password'))
+            user.save()
+            return Response({'message': 'Senha alterada com sucesso'})
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
