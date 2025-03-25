@@ -1,7 +1,7 @@
 from django.db import models
 from django.core.validators import MinValueValidator, EmailValidator
 from decimal import Decimal
-from subscriptions.models import Empresas
+from usuarios.models import Empresa
 import os
 
 class Funcionarios(models.Model):
@@ -17,7 +17,7 @@ class Funcionarios(models.Model):
     ]
 
     empresa = models.ForeignKey(
-        Empresas,
+        Empresa,
         on_delete=models.CASCADE,
         verbose_name='Empresa'
     )

@@ -1,9 +1,9 @@
 from django.db import models
-from subscriptions.models import Empresas
+from usuarios.models import Empresa
 
 class Clientes(models.Model):
     empresa = models.ForeignKey(
-        Empresas,
+        Empresa,
         on_delete=models.CASCADE,
         related_name='clientes_gerais',
         verbose_name='Empresa'

@@ -7,7 +7,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'corsheaders',
-    'subscriptions',
+    'assinaturas',  # Alterado de subscriptions para assinaturas
     'estoque',
     'reservas.apps.ReservasConfig',
 ] 

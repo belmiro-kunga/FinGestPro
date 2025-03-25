@@ -10,9 +10,9 @@ class MovimentacoesEstoque(models.Model):
     ]
 
     produto = models.ForeignKey(
-        'estoque.Produtos',  # Assumindo que existe um modelo Produtos no app estoque
+        'estoque.EstoqueProdutos',  # Corrigido para usar o modelo correto
         on_delete=models.PROTECT,
-        related_name='movimentacoes',
+        related_name='movimentacoes_controle',  # Alterado para evitar conflito
         verbose_name='Produto'
     )
     tipo = models.CharField(

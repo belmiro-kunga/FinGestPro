@@ -1,9 +1,10 @@
 from rest_framework import serializers
 from .models import Clientes, Faturas, Produtos, ItensFatura, Proformas, ItensProforma
-from subscriptions.serializers import EmpresasSerializer
+from assinaturas.serializers import EmpresaSerializer
+from clientes.serializers import ClientesSerializer
 
 class ClientesSerializer(serializers.ModelSerializer):
-    empresa = EmpresasSerializer(read_only=True)
+    empresa = EmpresaSerializer(read_only=True)
     empresa_id = serializers.IntegerField(write_only=True)
 
     class Meta:
@@ -15,7 +16,7 @@ class ClientesSerializer(serializers.ModelSerializer):
         read_only_fields = ['created_at', 'updated_at']
 
 class FaturasSerializer(serializers.ModelSerializer):
-    empresa = EmpresasSerializer(read_only=True)
+    empresa = EmpresaSerializer(read_only=True)
     empresa_id = serializers.IntegerField(write_only=True)
     cliente = ClientesSerializer(read_only=True)
     cliente_id = serializers.IntegerField(write_only=True)
@@ -40,7 +41,7 @@ class FaturasSerializer(serializers.ModelSerializer):
         return data
 
 class ProdutosSerializer(serializers.ModelSerializer):
-    empresa = EmpresasSerializer(read_only=True)
+    empresa = EmpresaSerializer(read_only=True)
     empresa_id = serializers.IntegerField(write_only=True)
 
     class Meta:
@@ -78,7 +79,7 @@ class ItensFaturaSerializer(serializers.ModelSerializer):
         return data
 
 class ProformasSerializer(serializers.ModelSerializer):
-    empresa = EmpresasSerializer(read_only=True)
+    empresa = EmpresaSerializer(read_only=True)
     empresa_id = serializers.IntegerField(write_only=True)
     cliente = ClientesSerializer(read_only=True)
     cliente_id = serializers.IntegerField(write_only=True)

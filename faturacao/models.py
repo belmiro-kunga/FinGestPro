@@ -1,12 +1,12 @@
 from django.db import models
 from django.core.validators import EmailValidator, MinValueValidator
 from decimal import Decimal
-from subscriptions.models import Empresas
+from usuarios.models import Empresa
 from django.core.exceptions import ValidationError
 
 class Clientes(models.Model):
     empresa = models.ForeignKey(
-        Empresas,
+        Empresa,
         on_delete=models.CASCADE,
         verbose_name='Empresa'
     )
@@ -64,7 +64,7 @@ class Faturas(models.Model):
     ]
 
     empresa = models.ForeignKey(
-        Empresas,
+        Empresa,
         on_delete=models.CASCADE,
         verbose_name='Empresa'
     )
@@ -117,7 +117,7 @@ class Faturas(models.Model):
 
 class Produtos(models.Model):
     empresa = models.ForeignKey(
-        Empresas,
+        Empresa,
         on_delete=models.CASCADE,
         verbose_name='Empresa'
     )
@@ -211,7 +211,7 @@ class ItensFatura(models.Model):
 
 class Proformas(models.Model):
     empresa = models.ForeignKey(
-        Empresas,
+        Empresa,
         on_delete=models.CASCADE,
         verbose_name='Empresa'
     )

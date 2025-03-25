@@ -2,34 +2,13 @@ from django.shortcuts import render
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
 from django.utils import timezone
-from .models import PlanosAssinatura, Empresas, PacoteSubscricao, Subscricao
-from .serializers import PlanosAssinaturaSerializer, EmpresasSerializer, PacoteSubscricaoSerializer, SubscricaoSerializer
+from .models import PacoteSubscricao, Subscricao
+from .serializers import PacoteSubscricaoSerializer, SubscricaoSerializer
 from usuarios.permissions import IsSuperAdmin, IsAdminEmpresa
 
 # Create your views here.
-
-class PlanosAssinaturaViewSet(viewsets.ModelViewSet):
-    queryset = PlanosAssinatura.objects.all()
-    serializer_class = PlanosAssinaturaSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
-    lookup_field = 'id'
-    lookup_url_kwarg = 'id'
-
-class EmpresasViewSet(viewsets.ModelViewSet):
-    queryset = Empresas.objects.all()
-    serializer_class = EmpresasSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
-    lookup_field = 'id'
-    lookup_url_arg = 'id'
-
-    def get_queryset(self):
-        queryset = Empresas.objects.all()
-        status = self.request.query_params.get('status', None)
-        if status:
-            queryset = queryset.filter(status=status)
-        return queryset
 
 class PacoteSubscricaoViewSet(viewsets.ModelViewSet):
     queryset = PacoteSubscricao.objects.all()

@@ -1,10 +1,10 @@
 from rest_framework import serializers
 from .models import Quartos, Mesas, Reservas
-from subscriptions.serializers import EmpresasSerializer
+from assinaturas.serializers import EmpresaSerializer
 from clientes.serializers import ClientesSerializer
 
 class QuartosSerializer(serializers.ModelSerializer):
-    empresa = EmpresasSerializer(read_only=True)
+    empresa = EmpresaSerializer(read_only=True)
     empresa_id = serializers.IntegerField(write_only=True)
     tipo_display = serializers.CharField(source='get_tipo_display', read_only=True)
     status_display = serializers.CharField(source='get_status_display', read_only=True)
@@ -58,7 +58,7 @@ class QuartosSerializer(serializers.ModelSerializer):
         return data 
 
 class MesasSerializer(serializers.ModelSerializer):
-    empresa = EmpresasSerializer(read_only=True)
+    empresa = EmpresaSerializer(read_only=True)
     empresa_id = serializers.IntegerField(write_only=True)
     status_display = serializers.CharField(source='get_status_display', read_only=True)
 
@@ -97,7 +97,7 @@ class MesasSerializer(serializers.ModelSerializer):
         return data 
 
 class ReservasSerializer(serializers.ModelSerializer):
-    empresa = EmpresasSerializer(read_only=True)
+    empresa = EmpresaSerializer(read_only=True)
     empresa_id = serializers.IntegerField(write_only=True)
     cliente = ClientesSerializer(read_only=True)
     cliente_id = serializers.IntegerField(write_only=True)

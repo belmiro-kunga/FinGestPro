@@ -1,7 +1,7 @@
 from django.db import models
 from django.core.validators import MinValueValidator
 from decimal import Decimal
-from subscriptions.models import Empresas
+from usuarios.models import Empresa
 from clientes.models import Clientes
 
 class Quartos(models.Model):
@@ -20,7 +20,7 @@ class Quartos(models.Model):
     ]
 
     empresa = models.ForeignKey(
-        Empresas,
+        Empresa,
         on_delete=models.CASCADE,
         related_name='quartos',
         verbose_name='Empresa'
@@ -87,7 +87,7 @@ class Mesas(models.Model):
     ]
 
     empresa = models.ForeignKey(
-        Empresas,
+        Empresa,
         on_delete=models.CASCADE,
         related_name='mesas',
         verbose_name='Empresa'
@@ -142,7 +142,7 @@ class Reservas(models.Model):
     ]
 
     empresa = models.ForeignKey(
-        Empresas,
+        Empresa,
         on_delete=models.CASCADE,
         related_name='reservas',
         verbose_name='Empresa'

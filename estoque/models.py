@@ -1,11 +1,11 @@
 from django.db import models
 from django.core.validators import MinValueValidator
 from decimal import Decimal
-from subscriptions.models import Empresas
+from usuarios.models import Empresa
 
 class EstoqueProdutos(models.Model):
     empresa = models.ForeignKey(
-        Empresas,
+        Empresa,
         on_delete=models.CASCADE,
         related_name='estoque_produtos',
         verbose_name='Empresa'
@@ -63,7 +63,7 @@ class MovimentacoesEstoque(models.Model):
     produto = models.ForeignKey(
         EstoqueProdutos,
         on_delete=models.CASCADE,
-        related_name='movimentacoes',
+        related_name='movimentacoes_estoque',
         verbose_name='Produto'
     )
     tipo = models.CharField(
@@ -133,4 +133,4 @@ class Produtos(models.Model):
         ordering = ['nome']
 
     def __str__(self):
-        return self.nome 
+        return self.nome

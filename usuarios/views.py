@@ -4,17 +4,52 @@ from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import get_user_model, authenticate
+from django.contrib.auth.models import Permission
 from django.utils import timezone
 from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
 from .serializers import (
     UsuarioSerializer,
     UsuarioUpdateSerializer,
-    ChangePasswordSerializer
+    ChangePasswordSerializer,
+    RoleSerializer,
+    PermissionSerializer
 )
+from .models import Role
 import jwt
 from datetime import datetime, timedelta
 
 User = get_user_model()
+
+class RoleViewSet(viewsets.ModelViewSet):
+    queryset = Role.objects.all()
+    serializer_class = RoleSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        # Usuários só podem ver roles da mesma empresa
+        return Role.objects.filter(empresa=self.request.user.empresa)
+
+    @action(detail=False, methods=['get'])
+    def available_permissions(self, request):
+        """Lista todas as permissões disponíveis no sistema"""
+        # Obtém todas as permissões do sistema
+        content_types = ContentType.objects.all()
+        permissions = Permission.objects.filter(content_type__in=content_types)
+        serializer = PermissionSerializer(permissions, many=True)
+        
+        # Agrupa permissões por app
+        grouped_permissions = {}
+        for perm in serializer.data:
+            app_label = perm['codename'].split('_')[0]
+            if app_label not in grouped_permissions:
+                grouped_permissions[app_label] = []
+            grouped_permissions[app_label].append(perm)
+            
+        return Response(grouped_permissions)
+
+    def perform_create(self, serializer):
+        serializer.save(empresa=self.request.user.empresa)
 
 class UsuarioViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
@@ -79,6 +114,12 @@ class UsuarioViewSet(viewsets.ModelViewSet):
         if user.empresa:
             access_token['empresa_id'] = user.empresa.id
             access_token['empresa_nome'] = user.empresa.nome
+        if user.role:
+            access_token['role'] = {
+                'id': user.role.id,
+                'nome': user.role.nome,
+                'permissoes': [p.codename for p in user.role.permissoes.all()]
+            }
 
         return Response({
             'refresh': str(refresh),
@@ -91,6 +132,11 @@ class UsuarioViewSet(viewsets.ModelViewSet):
                 'last_name': user.last_name,
                 'empresa': user.empresa.nome if user.empresa else None,
                 'cargo': user.cargo,
+                'role': {
+                    'id': user.role.id,
+                    'nome': user.role.nome,
+                    'permissoes': [p.codename for p in user.role.permissoes.all()]
+                } if user.role else None,
                 'is_staff': user.is_staff,
                 'is_superuser': user.is_superuser
             }
@@ -117,6 +163,12 @@ class UsuarioViewSet(viewsets.ModelViewSet):
             if user.empresa:
                 access_token['empresa_id'] = user.empresa.id
                 access_token['empresa_nome'] = user.empresa.nome
+            if user.role:
+                access_token['role'] = {
+                    'id': user.role.id,
+                    'nome': user.role.nome,
+                    'permissoes': [p.codename for p in user.role.permissoes.all()]
+                }
 
             return Response({
                 'access': str(access_token)

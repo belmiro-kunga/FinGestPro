@@ -1,9 +1,9 @@
 from rest_framework import serializers
 from .models import Clientes
-from subscriptions.serializers import EmpresasSerializer
+from assinaturas.serializers import EmpresaSerializer
 
 class ClientesSerializer(serializers.ModelSerializer):
-    empresa = EmpresasSerializer(read_only=True)
+    empresa = EmpresaSerializer(read_only=True)
     empresa_id = serializers.IntegerField(write_only=True)
 
     class Meta:
@@ -33,4 +33,4 @@ class ClientesSerializer(serializers.ModelSerializer):
                     'nif': 'Já existe um cliente com este NIF para esta empresa.'
                 })
         
-        return data 
+        return data

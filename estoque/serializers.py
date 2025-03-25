@@ -1,9 +1,9 @@
 from rest_framework import serializers
 from .models import EstoqueProdutos, MovimentacoesEstoque, Produtos
-from subscriptions.serializers import EmpresasSerializer
+from assinaturas.serializers import EmpresaSerializer
 
 class EstoqueProdutosSerializer(serializers.ModelSerializer):
-    empresa = EmpresasSerializer(read_only=True)
+    empresa = EmpresaSerializer(read_only=True)
     empresa_id = serializers.IntegerField(write_only=True)
 
     class Meta:

@@ -1,9 +1,10 @@
 from rest_framework import serializers
 from .models import Funcionarios, FolhaPagamento, BeneficiosSubsidios, RecibosSalario
-from subscriptions.serializers import EmpresasSerializer
+from assinaturas.serializers import EmpresaSerializer  
+from usuarios.serializers import UsuarioSerializer
 
 class FuncionariosSerializer(serializers.ModelSerializer):
-    empresa = EmpresasSerializer(read_only=True)
+    empresa = EmpresaSerializer(read_only=True)
     empresa_id = serializers.IntegerField(write_only=True)
 
     class Meta:
