@@ -82,14 +82,45 @@ class Role(models.Model):
     def __str__(self):
         return f"{self.nome} ({self.empresa.nome})"
 
+class UserActivity(models.Model):
+    user = models.ForeignKey(
+        'Usuario',
+        on_delete=models.CASCADE,
+        related_name='activities',
+        verbose_name='Usuário'
+    )
+    action = models.CharField(
+        max_length=10,
+        verbose_name='Ação'
+    )
+    path = models.CharField(
+        max_length=255,
+        verbose_name='Caminho'
+    )
+    ip_address = models.GenericIPAddressField(
+        verbose_name='Endereço IP'
+    )
+    timestamp = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Data/Hora'
+    )
+
+    class Meta:
+        verbose_name = 'Atividade do Usuário'
+        verbose_name_plural = 'Atividades dos Usuários'
+        ordering = ['-timestamp']
+
+    def __str__(self):
+        return f"{self.user.username} - {self.action} - {self.path} ({self.timestamp})"
+
 class Usuario(AbstractUser):
     TIPOS_USUARIO = [
         ('super_admin', 'Super Administrador'),
         ('admin_empresa', 'Administrador da Empresa'),
-        ('funcionario', 'Funcionário')
+        ('usuario', 'Usuário')
     ]
 
-    tipo = models.CharField(max_length=20, choices=TIPOS_USUARIO, default='funcionario')
+    tipo = models.CharField(max_length=20, choices=TIPOS_USUARIO, default='usuario')
     empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE, null=True, blank=True, related_name='usuarios')
     telefone = models.CharField(max_length=20, blank=True)
     nif = models.CharField(
@@ -102,8 +133,8 @@ class Usuario(AbstractUser):
             )
         ],
         verbose_name='NIF',
-        null=True,  # Permitir nulo para superusuários
-        blank=True  # Permitir em branco para superusuários
+        null=True,
+        blank=True
     )
     cargo = models.CharField(max_length=100, blank=True)
     foto = models.ImageField(upload_to='fotos_usuarios/', null=True, blank=True)
@@ -142,17 +173,16 @@ class Usuario(AbstractUser):
         # Se for super_admin, não deve ter empresa associada
         if self.tipo == 'super_admin':
             self.empresa = None
+            self.role = None
         
-        # Se for admin_empresa ou funcionario, deve ter empresa associada
-        elif self.tipo in ['admin_empresa', 'funcionario'] and not self.empresa:
+        # Se for admin_empresa ou usuario, deve ter empresa associada
+        elif self.tipo in ['admin_empresa', 'usuario'] and not self.empresa:
             raise ValidationError(_('Usuários não super admin devem ter uma empresa associada.'))
 
         # Verifica se a empresa pode adicionar mais usuários
         if self.empresa and not self.pk:  # Novo usuário
             if not self.empresa.pode_adicionar_usuario():
                 raise ValidationError(_('Limite de usuários atingido para esta empresa.'))
-
-        super().save(*args, **kwargs)
 
         # Configura permissões baseadas no tipo de usuário
         self.groups.clear()
@@ -165,14 +195,32 @@ class Usuario(AbstractUser):
             # Adiciona todas as permissões disponíveis no pacote
             if self.empresa:
                 self.user_permissions.set(self.empresa.get_permissoes_disponiveis())
-        else:  # funcionario
+        else:  # usuario normal
             self.is_superuser = False
             self.is_staff = False
+            # Limpa permissões e usa apenas as do Role
+            self.user_permissions.clear()
+            if self.role:
+                # Verifica se as permissões do role estão dentro das permissões do pacote
+                permissoes_disponiveis = self.empresa.get_permissoes_disponiveis()
+                permissoes_validas = self.role.permissoes.filter(id__in=permissoes_disponiveis)
+                self.user_permissions.set(permissoes_validas)
+
+        super().save(*args, **kwargs)
 
     def clean(self):
         super().clean()
-        if self.tipo in ['admin_empresa', 'funcionario'] and not self.empresa:
+        if self.tipo in ['admin_empresa', 'usuario'] and not self.empresa:
             raise ValidationError({'empresa': _('Empresa é obrigatória para este tipo de usuário.')})
+        
+        # Verifica se as permissões do role estão disponíveis no pacote
+        if self.role and self.empresa:
+            permissoes_disponiveis = self.empresa.get_permissoes_disponiveis()
+            permissoes_invalidas = self.role.permissoes.exclude(id__in=permissoes_disponiveis)
+            if permissoes_invalidas.exists():
+                raise ValidationError({
+                    'role': _('O perfil contém permissões não disponíveis no pacote atual da empresa.')
+                })
 
     def has_perm(self, perm, obj=None):
         # Super admin tem todas as permissões
@@ -184,8 +232,17 @@ class Usuario(AbstractUser):
             if not self.empresa.subscricao.esta_ativa():
                 return False
 
-        # Para outros usuários, usa o sistema padrão de permissões do Django
-        return super().has_perm(perm, obj)
+            # Para admin_empresa, verifica se a permissão está disponível no pacote
+            if self.tipo == 'admin_empresa':
+                return perm in [p.codename for p in self.empresa.get_permissoes_disponiveis()]
+            
+            # Para usuário normal, verifica se tem a permissão através do role
+            if self.tipo == 'usuario':
+                if self.role:
+                    return perm in [p.codename for p in self.role.permissoes.all()]
+                return False
+
+        return False
 
     def get_permissoes_disponiveis(self):
         """Retorna as permissões que podem ser atribuídas ao usuário"""

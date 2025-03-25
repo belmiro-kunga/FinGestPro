@@ -7,6 +7,7 @@ import re
 import html
 import json
 from django.core.serializers.json import DjangoJSONEncoder
+from django.utils import timezone
 
 User = get_user_model()
 
@@ -245,3 +246,59 @@ class SQLInjectionPreventionMiddleware:
         for pattern in self.sql_patterns:
             if re.search(pattern, value, re.IGNORECASE):
                 raise Exception('Possível tentativa de SQL injection detectada')
+
+class UserPermissionMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        if request.user.is_authenticated:
+            # Verifica se o usuário tem empresa associada (exceto super_admin)
+            if request.user.tipo != 'super_admin' and not request.user.empresa:
+                from django.contrib.auth import logout
+                logout(request)
+                from django.shortcuts import redirect
+                return redirect('login')
+
+            # Verifica se a empresa tem subscrição ativa
+            if request.user.empresa and hasattr(request.user.empresa, 'subscricao'):
+                if not request.user.empresa.subscricao.esta_ativa():
+                    if not request.path.startswith('/admin/'):  # Permite acesso ao admin para admins
+                        from django.shortcuts import render
+                        return render(request, 'subscription_expired.html', {
+                            'message': 'A subscrição da sua empresa expirou. Por favor, contate o administrador.'
+                        })
+
+            # Para usuários comuns, verifica se tem role atribuído
+            if request.user.tipo == 'usuario' and not request.user.role:
+                if not request.path.startswith('/admin/'):
+                    from django.shortcuts import render
+                    return render(request, 'access_denied.html', {
+                        'message': 'Você não tem um perfil atribuído. Por favor, contate o administrador da sua empresa.'
+                    })
+
+        response = self.get_response(request)
+        return response
+
+class UserActivityMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        if request.user.is_authenticated:
+            # Atualiza último login e IP
+            request.user.ultimo_login = timezone.now()
+            request.user.last_login_ip = request.META.get('REMOTE_ADDR')
+            request.user.save(update_fields=['ultimo_login', 'last_login_ip'])
+
+            # Registra atividade do usuário
+            from .models import UserActivity
+            UserActivity.objects.create(
+                user=request.user,
+                action=request.method,
+                path=request.path,
+                ip_address=request.META.get('REMOTE_ADDR')
+            )
+
+        response = self.get_response(request)
+        return response
