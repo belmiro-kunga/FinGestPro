@@ -1,0 +1,79 @@
+{% extends 'pos/base_pos.html' %}
+
+{% block pos_title %}Minhas Transferências{% endblock %}
+
+{% block pos_content %}
+<div class="row">
+    <!-- Vendas Recebidas -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Vendas Recebidas</h5>
+            </div>
+            <div class="card-body">
+                {% if vendas_recebidas %}
+                    <div class="list-group">
+                        {% for venda in vendas_recebidas %}
+                            <div class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">Venda #{{ venda.id }}</h6>
+                                    <small>{{ venda.data_ultima_transferencia|date:"d/m/Y H:i" }}</small>
+                                </div>
+                                <p class="mb-1">
+                                    <strong>De:</strong> {{ venda.usuario.get_full_name|default:venda.usuario.username }}<br>
+                                    <strong>Total:</strong> R$ {{ venda.total|floatformat:2 }}
+                                </p>
+                                <small>{{ venda.motivo_transferencia }}</small>
+                                <div class="mt-2">
+                                    <a href="{% url 'pos:aceitar_transferencia' venda.id %}" 
+                                       class="btn btn-success btn-sm">Aceitar</a>
+                                    <a href="{% url 'pos:rejeitar_transferencia' venda.id %}" 
+                                       class="btn btn-danger btn-sm">Rejeitar</a>
+                                    <a href="{% url 'pos:detalhes_venda' venda.id %}" 
+                                       class="btn btn-info btn-sm">Detalhes</a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted">Não há vendas transferidas para você no momento.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Vendas Enviadas -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Vendas Enviadas</h5>
+            </div>
+            <div class="card-body">
+                {% if vendas_enviadas %}
+                    <div class="list-group">
+                        {% for venda in vendas_enviadas %}
+                            <div class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">Venda #{{ venda.id }}</h6>
+                                    <small>{{ venda.data_ultima_transferencia|date:"d/m/Y H:i" }}</small>
+                                </div>
+                                <p class="mb-1">
+                                    <strong>Para:</strong> {{ venda.usuario_atual.get_full_name|default:venda.usuario_atual.username }}<br>
+                                    <strong>Total:</strong> R$ {{ venda.total|floatformat:2 }}
+                                </p>
+                                <small>{{ venda.motivo_transferencia }}</small>
+                                <div class="mt-2">
+                                    <a href="{% url 'pos:detalhes_venda' venda.id %}" 
+                                       class="btn btn-info btn-sm">Detalhes</a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted">Você não tem vendas em transferência no momento.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -3,7 +3,7 @@ from rest_framework import viewsets, status, permissions
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-from django.contrib.auth import get_user_model, authenticate
+from django.contrib.auth import get_user_model, authenticate, login
 from django.contrib.auth.models import Permission
 from django.utils import timezone
 from django.conf import settings
@@ -54,7 +54,11 @@ class RoleViewSet(viewsets.ModelViewSet):
 class UsuarioViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UsuarioSerializer
-    permission_classes = [permissions.IsAuthenticated]
+
+    def get_permissions(self):
+        if self.action == 'login':
+            return []
+        return [permissions.IsAuthenticated()]
 
     def get_serializer_class(self):
         if self.action in ['update', 'partial_update']:
@@ -63,6 +67,8 @@ class UsuarioViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         # Usuários só podem ver outros usuários da mesma empresa
+        if not self.request.user.is_authenticated:
+            return User.objects.none()
         return User.objects.filter(empresa=self.request.user.empresa)
 
     def perform_create(self, serializer):
@@ -100,6 +106,9 @@ class UsuarioViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_401_UNAUTHORIZED
             )
 
+        # Faz login no Django
+        login(request, user)
+
         # Atualiza o último IP de login
         user.last_login_ip = request.META.get('REMOTE_ADDR')
         user.save()
@@ -111,17 +120,17 @@ class UsuarioViewSet(viewsets.ModelViewSet):
         # Adiciona claims personalizados ao token
         access_token['username'] = user.username
         access_token['email'] = user.email
-        if user.empresa:
+        if hasattr(user, 'empresa') and user.empresa:
             access_token['empresa_id'] = user.empresa.id
             access_token['empresa_nome'] = user.empresa.nome
-        if user.role:
+        if hasattr(user, 'role') and user.role:
             access_token['role'] = {
                 'id': user.role.id,
                 'nome': user.role.nome,
                 'permissoes': [p.codename for p in user.role.permissoes.all()]
             }
 
-        return Response({
+        response_data = {
             'refresh': str(refresh),
             'access': str(access_token),
             'user': {
@@ -130,17 +139,25 @@ class UsuarioViewSet(viewsets.ModelViewSet):
                 'email': user.email,
                 'first_name': user.first_name,
                 'last_name': user.last_name,
-                'empresa': user.empresa.nome if user.empresa else None,
-                'cargo': user.cargo,
+                'empresa': user.empresa.nome if hasattr(user, 'empresa') and user.empresa else None,
+                'cargo': user.cargo if hasattr(user, 'cargo') else None,
                 'role': {
                     'id': user.role.id,
                     'nome': user.role.nome,
                     'permissoes': [p.codename for p in user.role.permissoes.all()]
-                } if user.role else None,
+                } if hasattr(user, 'role') and user.role else None,
                 'is_staff': user.is_staff,
                 'is_superuser': user.is_superuser
             }
-        })
+        }
+
+        # Define o URL de redirecionamento baseado no tipo de usuário
+        if user.is_superuser:
+            response_data['redirect_url'] = '/admin/'
+        else:
+            response_data['redirect_url'] = '/dashboard/'
+
+        return Response(response_data)
 
     @action(detail=False, methods=['post'])
     def refresh_token(self, request):
@@ -160,10 +177,10 @@ class UsuarioViewSet(viewsets.ModelViewSet):
             user = User.objects.get(id=refresh['user_id'])
             access_token['username'] = user.username
             access_token['email'] = user.email
-            if user.empresa:
+            if hasattr(user, 'empresa') and user.empresa:
                 access_token['empresa_id'] = user.empresa.id
                 access_token['empresa_nome'] = user.empresa.nome
-            if user.role:
+            if hasattr(user, 'role') and user.role:
                 access_token['role'] = {
                     'id': user.role.id,
                     'nome': user.role.nome,

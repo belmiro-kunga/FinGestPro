@@ -118,19 +118,17 @@ class MovimentacoesEstoque(models.Model):
         self.produto.save()
         super().delete(*args, **kwargs)
 
-class Produtos(models.Model):
-    nome = models.CharField(max_length=255, verbose_name='Nome')
-    stock = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        default=0,
-        verbose_name='Estoque'
-    )
+class Produto(models.Model):
+    nome = models.CharField(max_length=200)
+    descricao = models.TextField(blank=True)
+    preco = models.DecimalField(max_digits=10, decimal_places=2)
+    quantidade = models.IntegerField(default=0)
+    data_cadastro = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return self.nome
 
     class Meta:
         verbose_name = 'Produto'
         verbose_name_plural = 'Produtos'
         ordering = ['nome']
-
-    def __str__(self):
-        return self.nome

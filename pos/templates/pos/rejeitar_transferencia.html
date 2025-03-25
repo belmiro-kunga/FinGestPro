@@ -1,0 +1,54 @@
+{% extends 'pos/base_pos.html' %}
+
+{% block pos_title %}Rejeitar Transferência da Venda #{{ venda.id }}{% endblock %}
+
+{% block pos_content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Detalhes da Transferência</h5>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-4">Venda:</dt>
+                    <dd class="col-sm-8">#{{ venda.id }}</dd>
+                    
+                    <dt class="col-sm-4">Data da Transferência:</dt>
+                    <dd class="col-sm-8">{{ venda.data_ultima_transferencia|date:"d/m/Y H:i" }}</dd>
+                    
+                    <dt class="col-sm-4">Usuário Original:</dt>
+                    <dd class="col-sm-8">{{ venda.usuario.get_full_name|default:venda.usuario.username }}</dd>
+                    
+                    <dt class="col-sm-4">Motivo da Transferência:</dt>
+                    <dd class="col-sm-8">{{ venda.motivo_transferencia }}</dd>
+                </dl>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Motivo da Rejeição</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="form-group mb-3">
+                        <label for="motivo">Por que você está rejeitando esta transferência?</label>
+                        <textarea name="motivo" id="motivo" class="form-control" rows="3" required></textarea>
+                        <small class="form-text text-muted">
+                            Por favor, forneça um motivo claro para a rejeição da transferência.
+                        </small>
+                    </div>
+                    
+                    <div class="text-end">
+                        <a href="{% url 'pos:detalhes_venda' venda.id %}" class="btn btn-secondary">Cancelar</a>
+                        <button type="submit" class="btn btn-danger">Rejeitar Transferência</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

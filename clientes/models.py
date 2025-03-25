@@ -1,59 +1,18 @@
 from django.db import models
-from usuarios.models import Empresa
+from django.utils import timezone
 
-class Clientes(models.Model):
-    empresa = models.ForeignKey(
-        Empresa,
-        on_delete=models.CASCADE,
-        related_name='clientes_gerais',
-        verbose_name='Empresa'
-    )
-    nome = models.CharField(
-        max_length=100,
-        verbose_name='Nome'
-    )
-    email = models.EmailField(
-        max_length=100,
-        blank=True,
-        null=True,
-        verbose_name='E-mail'
-    )
-    telefone = models.CharField(
-        max_length=20,
-        blank=True,
-        null=True,
-        verbose_name='Telefone'
-    )
-    nif = models.CharField(
-        max_length=14,
-        blank=True,
-        null=True,
-        verbose_name='NIF'
-    )
-    endereco = models.TextField(
-        blank=True,
-        null=True,
-        verbose_name='Endereço'
-    )
-    observacao = models.TextField(
-        blank=True,
-        null=True,
-        verbose_name='Observação'
-    )
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name='Data de Criação'
-    )
-    updated_at = models.DateTimeField(
-        auto_now=True,
-        verbose_name='Data de Atualização'
-    )
+class Cliente(models.Model):
+    nome = models.CharField(max_length=200)
+    email = models.EmailField(unique=True)
+    telefone = models.CharField(max_length=20)
+    endereco = models.TextField()
+    data_cadastro = models.DateTimeField(default=timezone.now)
+    ativo = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.nome
 
     class Meta:
         verbose_name = 'Cliente'
         verbose_name_plural = 'Clientes'
         ordering = ['nome']
-        unique_together = ['empresa', 'nif']
-
-    def __str__(self):
-        return f"{self.nome} ({self.empresa.nome})" 

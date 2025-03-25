@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<style>
+    .pos-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    .pos-header {
+        margin-bottom: 30px;
+    }
+    .pos-content {
+        background: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .pos-footer {
+        margin-top: 30px;
+        text-align: right;
+    }
+    .item-list {
+        margin: 20px 0;
+    }
+    .item-row {
+        padding: 10px;
+        border-bottom: 1px solid #eee;
+    }
+    .total-section {
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 2px solid #eee;
+    }
+    .payment-methods {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 10px;
+        margin: 20px 0;
+    }
+    .payment-method-btn {
+        padding: 15px;
+        text-align: center;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+    .payment-method-btn:hover {
+        background-color: #f8f9fa;
+    }
+    .payment-method-btn.active {
+        background-color: #007bff;
+        color: white;
+        border-color: #0056b3;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="pos-container">
+    <div class="pos-header">
+        <h1>{% block pos_title %}{% endblock %}</h1>
+    </div>
+    
+    <div class="pos-content">
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        {% block pos_content %}{% endblock %}
+    </div>
+    
+    <div class="pos-footer">
+        {% block pos_footer %}{% endblock %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('.select2').select2();
+    });
+</script>
+{% block pos_js %}{% endblock %}
+{% endblock %}

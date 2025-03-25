@@ -1,0 +1,61 @@
+{% extends 'pos/base_pos.html' %}
+
+{% block pos_title %}Transferir Venda #{{ venda.id }}{% endblock %}
+
+{% block pos_content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Detalhes da Venda</h5>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-4">Data da Venda:</dt>
+                    <dd class="col-sm-8">{{ venda.data_venda|date:"d/m/Y H:i" }}</dd>
+                    
+                    <dt class="col-sm-4">Cliente:</dt>
+                    <dd class="col-sm-8">{{ venda.cliente|default:"Cliente não identificado" }}</dd>
+                    
+                    <dt class="col-sm-4">Total:</dt>
+                    <dd class="col-sm-8">R$ {{ venda.total|floatformat:2 }}</dd>
+                    
+                    <dt class="col-sm-4">Status:</dt>
+                    <dd class="col-sm-8">{{ venda.get_status_display }}</dd>
+                </dl>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Transferir para outro usuário</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="form-group mb-3">
+                        <label for="novo_usuario">Selecione o usuário:</label>
+                        <select name="novo_usuario" id="novo_usuario" class="form-control select2" required>
+                            <option value="">Selecione...</option>
+                            {% for usuario in usuarios %}
+                            <option value="{{ usuario.id }}">{{ usuario.get_full_name|default:usuario.username }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label for="motivo">Motivo da transferência:</label>
+                        <textarea name="motivo" id="motivo" class="form-control" rows="3" required></textarea>
+                    </div>
+                    
+                    <div class="text-end">
+                        <a href="{% url 'pos:detalhes_venda' venda.id %}" class="btn btn-secondary">Cancelar</a>
+                        <button type="submit" class="btn btn-primary">Transferir Venda</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

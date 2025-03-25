@@ -10,4 +10,5 @@ INSTALLED_APPS = [
     'assinaturas',  # Alterado de subscriptions para assinaturas
     'estoque',
     'reservas.apps.ReservasConfig',
+    'pos',  # Nova app de Point of Sale
 ] 

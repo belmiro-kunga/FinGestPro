@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import EstoqueProdutos, MovimentacoesEstoque
+from .models import EstoqueProdutos, MovimentacoesEstoque, Produto
 
 @admin.register(EstoqueProdutos)
 class EstoqueProdutosAdmin(admin.ModelAdmin):
@@ -45,3 +45,9 @@ class MovimentacoesEstoqueAdmin(admin.ModelAdmin):
         if obj:  # Se estiver editando um objeto existente
             return self.readonly_fields + ('produto', 'tipo', 'quantidade')
         return self.readonly_fields
+
+@admin.register(Produto)
+class ProdutoAdmin(admin.ModelAdmin):
+    list_display = ('nome', 'preco', 'quantidade', 'data_cadastro')
+    list_filter = ('data_cadastro',)
+    search_fields = ('nome', 'descricao')
