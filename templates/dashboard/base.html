@@ -1,0 +1,171 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Dashboard - FinGest Pro{% endblock %}</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="bg-gray-900 text-gray-100">
+    <div class="min-h-screen flex">
+        <!-- Menu Lateral -->
+        <aside class="w-64 bg-gray-800 border-r border-gray-700 fixed h-full overflow-y-auto">
+            <!-- Logo -->
+            <div class="p-4 border-b border-gray-700">
+                <img src="{% static 'img/logo.png' %}" alt="FinGest Pro" class="h-8">
+            </div>
+
+            <!-- Menu Principal -->
+            <nav class="mt-4">
+                <div class="px-4 py-2">
+                    <p class="text-xs uppercase text-gray-400">Menu Principal</p>
+                </div>
+                
+                <a href="{% url 'dashboard' %}" class="flex items-center px-4 py-3 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
+                    <i class="fas fa-chart-line w-5"></i>
+                    <span class="ml-3">Dashboard</span>
+                </a>
+
+                <a href="{% url 'assinaturas' %}" class="flex items-center px-4 py-3 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
+                    <i class="fas fa-credit-card w-5"></i>
+                    <span class="ml-3">Assinaturas</span>
+                </a>
+
+                <a href="{% url 'clientes' %}" class="flex items-center px-4 py-3 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
+                    <i class="fas fa-users w-5"></i>
+                    <span class="ml-3">Clientes</span>
+                </a>
+
+                <a href="{% url 'inventario' %}" class="flex items-center px-4 py-3 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
+                    <i class="fas fa-box w-5"></i>
+                    <span class="ml-3">Inventário</span>
+                </a>
+
+                <a href="{% url 'faturamento' %}" class="flex items-center px-4 py-3 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
+                    <i class="fas fa-file-invoice-dollar w-5"></i>
+                    <span class="ml-3">Faturamento</span>
+                </a>
+
+                <a href="{% url 'produtos' %}" class="flex items-center px-4 py-3 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
+                    <i class="fas fa-shopping-bag w-5"></i>
+                    <span class="ml-3">Produtos</span>
+                </a>
+
+                <a href="{% url 'relatorios' %}" class="flex items-center px-4 py-3 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
+                    <i class="fas fa-chart-bar w-5"></i>
+                    <span class="ml-3">Relatórios</span>
+                </a>
+
+                <a href="{% url 'reservas' %}" class="flex items-center px-4 py-3 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
+                    <i class="fas fa-calendar-alt w-5"></i>
+                    <span class="ml-3">Reservas</span>
+                </a>
+
+                <a href="{% url 'rh' %}" class="flex items-center px-4 py-3 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
+                    <i class="fas fa-user-tie w-5"></i>
+                    <span class="ml-3">Recursos Humanos</span>
+                </a>
+
+                <a href="{% url 'pos' %}" class="flex items-center px-4 py-3 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
+                    <i class="fas fa-cash-register w-5"></i>
+                    <span class="ml-3">PDV</span>
+                </a>
+
+                <div class="px-4 py-2 mt-4">
+                    <p class="text-xs uppercase text-gray-400">Configurações</p>
+                </div>
+
+                <a href="{% url 'configuracoes' %}" class="flex items-center px-4 py-3 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
+                    <i class="fas fa-cog w-5"></i>
+                    <span class="ml-3">Configurações</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Conteúdo Principal -->
+        <main class="flex-1 ml-64">
+            <!-- Cabeçalho -->
+            <header class="bg-gray-800 border-b border-gray-700 h-16 fixed w-full z-10 pl-64">
+                <div class="flex items-center justify-between h-full px-6">
+                    <!-- Barra de Pesquisa -->
+                    <div class="flex-1 max-w-2xl ml-4">
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                                <i class="fas fa-search text-gray-400"></i>
+                            </span>
+                            <input type="text" 
+                                   class="w-full pl-10 pr-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-200 placeholder-gray-400 focus:outline-none focus:border-blue-500"
+                                   placeholder="Pesquisar...">
+                        </div>
+                    </div>
+
+                    <!-- Menu do Usuário -->
+                    <div class="flex items-center">
+                        <!-- Notificações -->
+                        <button class="p-2 text-gray-400 hover:text-white transition-colors relative">
+                            <i class="fas fa-bell"></i>
+                            <span class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
+                        </button>
+
+                        <!-- Perfil -->
+                        <div class="relative ml-4">
+                            <button id="userMenuButton" class="flex items-center space-x-3 focus:outline-none">
+                                <div class="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center">
+                                    <i class="fas fa-user text-gray-300"></i>
+                                </div>
+                                <span class="text-gray-300">{{ user.first_name }}</span>
+                                <i class="fas fa-chevron-down text-gray-500 text-sm"></i>
+                            </button>
+
+                            <!-- Menu Dropdown -->
+                            <div id="userMenu" class="hidden absolute right-0 mt-2 w-48 bg-gray-800 border border-gray-700 rounded-lg shadow-lg py-1">
+                                <a href="{% url 'perfil' %}" class="block px-4 py-2 text-gray-300 hover:bg-gray-700">
+                                    <i class="fas fa-user-circle mr-2"></i>Perfil
+                                </a>
+                                <a href="{% url 'configuracoes' %}" class="block px-4 py-2 text-gray-300 hover:bg-gray-700">
+                                    <i class="fas fa-cog mr-2"></i>Configurações
+                                </a>
+                                <div class="border-t border-gray-700 my-1"></div>
+                                <a href="{% url 'logout' %}" class="block px-4 py-2 text-gray-300 hover:bg-gray-700">
+                                    <i class="fas fa-sign-out-alt mr-2"></i>Sair
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Área de Conteúdo -->
+            <div class="pt-16 px-6 py-8">
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Toggle do menu do usuário
+        const userMenuButton = document.getElementById('userMenuButton');
+        const userMenu = document.getElementById('userMenu');
+
+        userMenuButton.addEventListener('click', () => {
+            userMenu.classList.toggle('hidden');
+        });
+
+        // Fechar menu ao clicar fora
+        document.addEventListener('click', (event) => {
+            if (!userMenuButton.contains(event.target) && !userMenu.contains(event.target)) {
+                userMenu.classList.add('hidden');
+            }
+        });
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html> 
