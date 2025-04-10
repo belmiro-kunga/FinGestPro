@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinGestPro - Login</title>
+    <link rel="stylesheet" href="css/login.css">
+</head>
+<body>
+    <div class="login-container">
+        <div class="version-info">
+            <div class="company-info">
+                <p>OPAIA, LDA</p>
+                <p>NIF: 540786959</p>
+                <p>Versão: 10.00.10.6016</p>
+            </div>
+            <div class="logo">v10</div>
+        </div>
+        
+        <div class="login-form">
+            <div class="user-icon">
+                <img src="assets/user-icon.png" alt="User Icon">
+            </div>
+            <h2>Bem-vindo</h2>
+            <form id="loginForm">
+                <div class="input-group">
+                    <input type="text" id="username" name="username" required>
+                </div>
+                <div class="input-group">
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="windowsAuth" name="windowsAuth">
+                    <label for="windowsAuth">Autenticação Windows</label>
+                </div>
+                <div class="button-group">
+                    <button type="submit" class="btn-confirmar">Confirmar</button>
+                    <button type="button" class="btn-cancelar">Cancelar</button>
+                </div>
+            </form>
+            <div id="error-message" class="error-message"></div>
+        </div>
+        
+        <div class="footer">
+            <p>© 2025 PRIMAVERA – BUSINESS SOFTWARE SOLUTIONS</p>
+            <p>Contrato válido até: 26/06/2025</p>
+        </div>
+    </div>
+    <script src="js/login.js"></script>
+</body>
+</html>

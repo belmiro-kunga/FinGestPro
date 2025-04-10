@@ -1,6 +1,6 @@
 {
-  "name": "my-app",
-  "productName": "my-app",
+  "name": "fingestpro",
+  "productName": "FinGestPro",
   "version": "1.0.0",
   "description": "My Electron application description",
   "main": ".webpack/main",
@@ -34,6 +34,11 @@
     "style-loader": "^3.3.4"
   },
   "dependencies": {
-    "electron-squirrel-startup": "^1.0.1"
+    "bcrypt": "^5.1.1",
+    "compression": "^1.8.0",
+    "cors": "^2.8.5",
+    "electron-squirrel-startup": "^1.0.1",
+    "express": "^5.1.0",
+    "mysql2": "^3.9.2"
   }
 }
