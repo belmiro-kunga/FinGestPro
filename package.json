@@ -1,0 +1,23 @@
+{
+  "name": "fingestpro",
+  "version": "1.0.0",
+  "description": "Sistema de Gestão Financeira",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "electron": "^28.1.0",
+    "sqlite3": "^5.1.7",
+    "mysql2": "^3.6.5",
+    "sequelize": "^6.35.2",
+    "electron-store": "^8.1.0",
+    "bcryptjs": "^2.4.3"
+  },
+  "devDependencies": {
+    "electron-builder": "^24.9.1"
+  }
+}
