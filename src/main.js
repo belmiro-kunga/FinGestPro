@@ -1,10 +1,36 @@
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
+const express = require('express');
+const compression = require('compression');
+const cors = require('cors');
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
   app.quit();
 }
+
+// Create Express server for serving static files
+const server = express();
+server.use(compression());
+server.use(cors());
+
+// Serve static files from src directory
+server.use(express.static(path.join(__dirname), {
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.css')) {
+      res.setHeader('Content-Type', 'text/css');
+    }
+  }
+}));
+
+// Serve node_modules for Font Awesome
+server.use('/node_modules', express.static(path.join(__dirname, '..', 'node_modules')));
+
+// Start the server
+const PORT = 3000;
+server.listen(PORT, () => {
+  console.log(`Static file server running on port ${PORT}`);
+});
 
 const createWindow = () => {
   // Create the browser window.
@@ -16,13 +42,47 @@ const createWindow = () => {
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
-      preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY
+      webSecurity: true
     },
     autoHideMenuBar: true
   });
 
-  // Load the index.html file
-  mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
+  // Set CSP headers
+  mainWindow.webContents.session.webRequest.onHeadersReceived((details, callback) => {
+    callback({
+      responseHeaders: {
+        ...details.responseHeaders,
+        'Content-Security-Policy': [
+          "default-src 'self' http://localhost:3000;",
+          "style-src 'self' 'unsafe-inline' http://localhost:3000 https://cdnjs.cloudflare.com;",
+          "font-src 'self' https://cdnjs.cloudflare.com;",
+          "img-src 'self' data: http://localhost:3000;"
+        ].join(' ')
+      }
+    });
+  });
+
+  // Wait for server to be ready
+  const waitForServer = () => {
+    return new Promise((resolve) => {
+      const testConnection = () => {
+        const req = require('http').get('http://localhost:3000', (res) => {
+          if (res.statusCode === 200) {
+            resolve();
+          } else {
+            setTimeout(testConnection, 100);
+          }
+        });
+        req.on('error', () => setTimeout(testConnection, 100));
+      };
+      testConnection();
+    });
+  };
+
+  // Load the index.html file after server is ready
+  waitForServer().then(() => {
+    mainWindow.loadURL('http://localhost:3000/index.html');
+  });
 
   // Open DevTools (for development)
   mainWindow.webContents.openDevTools();

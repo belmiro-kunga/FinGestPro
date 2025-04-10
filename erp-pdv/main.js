@@ -6,13 +6,23 @@ let mainWindow;
 let serverProcess;
 
 function startServer() {
-    serverProcess = spawn('node', ['server.js'], {
-        stdio: 'inherit',
-        shell: true
-    });
+    return new Promise((resolve, reject) => {
+        serverProcess = spawn('node', ['server.js'], {
+            stdio: 'inherit',
+            shell: true,
+            env: {
+                ...process.env,
+                NODE_ENV: process.env.NODE_ENV || 'development'
+            }
+        });
 
-    serverProcess.on('error', (err) => {
-        console.error('Erro ao iniciar o servidor:', err);
+        serverProcess.on('error', (err) => {
+            console.error('Erro ao iniciar o servidor:', err);
+            reject(err);
+        });
+
+        // Aguarda o servidor iniciar
+        setTimeout(resolve, 2000);
     });
 }
 
@@ -42,9 +52,14 @@ function createWindow() {
     });
 }
 
-app.whenReady().then(() => {
-    startServer();
-    createWindow();
+app.whenReady().then(async () => {
+    try {
+        await startServer();
+        createWindow();
+    } catch (error) {
+        console.error('Falha ao iniciar o aplicativo:', error);
+        app.quit();
+    }
 });
 
 app.on('window-all-closed', () => {
