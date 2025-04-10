@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>FinGestPro - PDV</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="pdv-container">
+        <!-- Barra lateral com produtos -->
+        <div class="products-sidebar">
+            <div class="search-box">
+                <input type="text" id="productSearch" placeholder="Pesquisar produto...">
+                <button id="barcodeButton">
+                    <i class="fas fa-barcode"></i>
+                </button>
+            </div>
+            <div class="categories-list">
+                <!-- Categorias serão carregadas dinamicamente -->
+            </div>
+            <div class="products-grid" id="productsGrid">
+                <!-- Produtos serão carregados dinamicamente -->
+            </div>
+        </div>
+
+        <!-- Área principal do PDV -->
+        <div class="main-content">
+            <!-- Cabeçalho com informações da venda -->
+            <div class="sale-header">
+                <div class="sale-info">
+                    <span>Venda Nº: <strong id="saleNumber">---</strong></span>
+                    <span>Data: <strong id="saleDate">---</strong></span>
+                    <span>Vendedor: <strong id="sellerName">---</strong></span>
+                </div>
+                <div class="customer-info">
+                    <button id="selectCustomerBtn">
+                        <i class="fas fa-user"></i>
+                        <span id="customerName">Selecionar Cliente</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Lista de itens da venda -->
+            <div class="sale-items">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Produto</th>
+                            <th>Qtd</th>
+                            <th>Preço</th>
+                            <th>Desc.</th>
+                            <th>Total</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="saleItemsList">
+                        <!-- Itens serão adicionados dinamicamente -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Totais e ações -->
+            <div class="sale-footer">
+                <div class="totals">
+                    <div class="total-item">
+                        <span>Subtotal:</span>
+                        <strong id="subtotal">0,00 Kz</strong>
+                    </div>
+                    <div class="total-item">
+                        <span>Desconto:</span>
+                        <strong id="discount">0,00 Kz</strong>
+                    </div>
+                    <div class="total-item">
+                        <span>IVA:</span>
+                        <strong id="tax">0,00 Kz</strong>
+                    </div>
+                    <div class="total-item grand-total">
+                        <span>Total:</span>
+                        <strong id="total">0,00 Kz</strong>
+                    </div>
+                </div>
+                <div class="actions">
+                    <button id="cancelSaleBtn" class="btn-secondary">
+                        <i class="fas fa-times"></i>
+                        Cancelar
+                    </button>
+                    <button id="holdSaleBtn" class="btn-secondary">
+                        <i class="fas fa-pause"></i>
+                        Suspender
+                    </button>
+                    <button id="checkoutBtn" class="btn-primary">
+                        <i class="fas fa-money-bill-wave"></i>
+                        Finalizar (F2)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Pagamento -->
+    <div id="paymentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Finalizar Venda</h3>
+                <button class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="payment-info">
+                    <div class="amount-display">
+                        <span>Total a Pagar:</span>
+                        <strong id="paymentTotal">0,00 Kz</strong>
+                    </div>
+                    <div class="payment-methods">
+                        <button class="payment-method active" data-method="cash">
+                            <i class="fas fa-money-bill-wave"></i>
+                            Dinheiro
+                        </button>
+                        <button class="payment-method" data-method="card">
+                            <i class="fas fa-credit-card"></i>
+                            Cartão
+                        </button>
+                        <button class="payment-method" data-method="transfer">
+                            <i class="fas fa-exchange-alt"></i>
+                            Transferência
+                        </button>
+                    </div>
+                    <div class="payment-details">
+                        <div class="form-group">
+                            <label>Valor Recebido</label>
+                            <input type="number" id="amountReceived" step="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label>Troco</label>
+                            <input type="text" id="change" readonly>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closePaymentModal()">Cancelar</button>
+                <button class="btn-primary" id="confirmPaymentBtn">Confirmar Pagamento</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="pdv.js"></script>
+</body>
+</html>
